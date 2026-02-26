@@ -33,12 +33,12 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex font-sans">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#0A0A0A] text-zinc-100 flex flex-col md:flex-row font-sans">
+      {/* Desktop Sidebar */}
       <aside 
         className={`${
           isSidebarOpen ? 'w-64' : 'w-20'
-        } border-r border-zinc-800 bg-[#0F0F0F] transition-all duration-300 flex flex-col sticky top-0 h-screen z-50`}
+        } border-r border-zinc-800 bg-[#0F0F0F] transition-all duration-300 hidden md:flex flex-col sticky top-0 h-screen z-50`}
       >
         <div className="p-6 flex items-center justify-between">
           {isSidebarOpen && (
@@ -85,21 +85,37 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
         </div>
       </aside>
 
+      {/* Mobile Bottom Navigation */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0F0F0F]/90 backdrop-blur-lg border-t border-zinc-800 z-50 px-4 py-2 flex justify-between items-center">
+        {tabs.slice(0, 5).map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+              activeTab === tab.id ? 'text-emerald-400' : 'text-zinc-500'
+            }`}
+          >
+            <tab.icon size={20} />
+            <span className="text-[10px] mt-1 font-medium">{tab.label.split(' ')[0]}</span>
+          </button>
+        ))}
+      </nav>
+
       {/* Main Content */}
-      <main className="flex-1 overflow-auto relative">
-        <header className="h-16 border-b border-zinc-800 bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40 px-8 flex items-center justify-between">
+      <main className="flex-1 overflow-auto relative pb-20 md:pb-0">
+        <header className="h-16 border-b border-zinc-800 bg-[#0A0A0A]/80 backdrop-blur-md sticky top-0 z-40 px-4 md:px-8 flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h2 className="text-lg font-semibold capitalize">{activeTab}</h2>
           </div>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span className="text-xs font-mono text-emerald-400">$42.50 Today</span>
+              <span className="text-[10px] md:text-xs font-mono text-emerald-400">$42.50 Today</span>
             </div>
           </div>
         </header>
 
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-4 md:p-8 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Play, Info, Star, TrendingUp } from 'lucide-react';
+import { Search, Play, Info, Star, TrendingUp, Share2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
 interface Movie {
@@ -80,7 +80,7 @@ export default function Movies() {
               <Play size={20} className="mr-2 fill-current" /> Play Now
             </button>
             <button className="bg-white/10 backdrop-blur-md text-white font-bold px-8 py-3 rounded-xl hover:bg-white/20 transition-colors flex items-center border border-white/10">
-              <Info size={20} className="mr-2" /> More Info
+              <Share2 size={20} className="mr-2" /> Share
             </button>
           </div>
         </div>

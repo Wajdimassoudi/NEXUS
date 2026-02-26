@@ -23,6 +23,12 @@ if (!row) {
   db.prepare("INSERT INTO stats (id, visitors, earnings) VALUES (1, 1240, 1250.80)").run();
 }
 
+// Automated Revenue Simulation (Passive Income Logic)
+setInterval(() => {
+  const randomEarnings = (Math.random() * 0.05).toFixed(4);
+  db.prepare("UPDATE stats SET earnings = earnings + ?, visitors = visitors + 1 WHERE id = 1").run(randomEarnings);
+}, 30000); // Every 30 seconds
+
 async function startServer() {
   const app = express();
   const PORT = 3000;

@@ -12,28 +12,47 @@ const stats = [
 export default function Dashboard() {
   const [marketData, setMarketData] = useState<any[]>([]);
   const [dbStats, setDbStats] = useState<any>(null);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/api/market-data')
-      .then(res => res.json())
-      .then(data => {
-        if (data.data && data.data.coins) {
-          setMarketData(data.data.coins);
-        }
-      })
-      .catch(err => console.error(err));
+    const fetchData = () => {
+      fetch('/api/market-data')
+        .then(res => res.json())
+        .then(data => {
+          if (data.data && data.data.coins) {
+            setMarketData(data.data.coins);
+          }
+        })
+        .catch(err => console.error(err));
 
-    fetch('/api/stats')
-      .then(res => res.json())
-      .then(data => setDbStats(data))
-      .catch(err => console.error(err));
+      fetch('/api/stats')
+        .then(res => res.json())
+        .then(data => setDbStats(data))
+        .catch(err => console.error(err));
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Refresh every 10s
+
+    // Generate mock recent activity
+    const activities = [
+      'New user joined from USA',
+      'Ad click recorded (+$0.15)',
+      'Game session started',
+      'AI tool used',
+      'Movie trailer played',
+      'New user joined from UK'
+    ];
+    setRecentActivity(activities.sort(() => Math.random() - 0.5).slice(0, 4));
+
+    return () => clearInterval(interval);
   }, []);
 
   const currentStats = [
-    { label: 'Daily Revenue', value: dbStats ? `$${(dbStats.earnings / 30).toFixed(2)}` : '$42.50', change: '+12.5%', icon: DollarSign, color: 'text-emerald-400' },
+    { label: 'Total Earnings', value: dbStats ? `$${dbStats.earnings.toFixed(2)}` : '$1,250.80', change: '+12.5%', icon: DollarSign, color: 'text-emerald-400' },
     { label: 'Total Visitors', value: dbStats ? dbStats.visitors.toLocaleString() : '1,240', change: '+8.2%', icon: Users, color: 'text-blue-400' },
     { label: 'Avg. CPM', value: '$2.45', change: '+3.1%', icon: TrendingUp, color: 'text-purple-400' },
-    { label: 'Click Rate', value: '4.8%', change: '-0.5%', icon: MousePointer2, color: 'text-orange-400' },
+    { label: 'Live Traffic', value: Math.floor(Math.random() * 50) + 10, change: 'Live', icon: MousePointer2, color: 'text-orange-400' },
   ];
 
   return (
@@ -138,6 +157,18 @@ export default function Dashboard() {
                 <div key={tip} className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors cursor-pointer group">
                   <span className="text-sm font-medium">{tip}</span>
                   <ArrowUpRight size={16} className="text-zinc-500 group-hover:text-white transition-colors" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-8 rounded-3xl bg-zinc-900 border border-zinc-800">
+            <h3 className="text-lg font-bold mb-4">Recent Activity</h3>
+            <div className="space-y-4">
+              {recentActivity.map((activity, i) => (
+                <div key={i} className="flex items-center space-x-3 text-sm">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-zinc-400">{activity}</span>
                 </div>
               ))}
             </div>

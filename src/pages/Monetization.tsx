@@ -79,6 +79,29 @@ export default function Monetization() {
         </div>
       </div>
 
+      {/* Auto-Withdrawal Settings */}
+      <div className="p-8 rounded-3xl bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-white/10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold flex items-center">
+              <Zap size={20} className="mr-2 text-yellow-400" /> Automated Payouts
+            </h3>
+            <p className="text-zinc-400 text-sm">
+              Enable automatic withdrawals to your primary BNB/USDT wallet once the threshold is reached.
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <div className="text-right">
+              <p className="text-xs text-zinc-500 font-bold uppercase">Status</p>
+              <p className="text-emerald-400 font-bold">ACTIVE</p>
+            </div>
+            <button className="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-6 py-3 rounded-xl transition-colors">
+              Configure Bot
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Payout Wallets Section */}
       <div className="p-8 rounded-3xl bg-[#0F0F0F] border border-zinc-800">
         <h2 className="text-2xl font-bold mb-6">Payout Wallets</h2>
