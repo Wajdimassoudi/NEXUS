@@ -22,20 +22,24 @@ export default function Movies() {
     fetchMovies();
   }, []);
 
-  const fetchMovies = async () => {
+  const fetchMovies = async (query = '') => {
+    setLoading(true);
     try {
       if (!TMDB_API_KEY) {
         // Mock data if no API key
         setMovies([...Array(12)].map((_, i) => ({
           id: i,
-          title: `Sample Movie ${i + 1}`,
+          title: query ? `${query} Result ${i + 1}` : `Sample Movie ${i + 1}`,
           poster_path: `https://picsum.photos/seed/movie${i}/400/600`,
           vote_average: 8.5,
           release_date: '2024-01-01',
           overview: 'This is a sample movie description for the Nexus platform.'
         })));
       } else {
-        const res = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`);
+        const url = query 
+          ? `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${query}`
+          : `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`;
+        const res = await fetch(url);
         const data = await res.json();
         setMovies(data.results);
       }
@@ -44,6 +48,11 @@ export default function Movies() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchMovies(search);
   };
 
   return (
@@ -79,7 +88,7 @@ export default function Movies() {
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h2 className="text-2xl font-bold">Popular Movies</h2>
-        <div className="relative w-full md:w-96">
+        <form onSubmit={handleSearch} className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
           <input 
             type="text"
@@ -88,7 +97,7 @@ export default function Movies() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
+        </form>
       </div>
 
       {loading ? (

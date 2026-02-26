@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Games from './pages/Games';
@@ -10,6 +10,10 @@ import Monetization from './pages/Monetization';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+
+  useEffect(() => {
+    fetch('/api/track-visit', { method: 'POST' }).catch(() => {});
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {

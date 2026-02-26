@@ -22,22 +22,28 @@ export default function Games() {
     fetchGames();
   }, []);
 
-  const fetchGames = async () => {
+  const fetchGames = async (query = '') => {
+    setLoading(true);
     try {
-      // If no API key, use FreeToGame as fallback or mock
       if (!RAWG_API_KEY) {
-        const res = await fetch('https://www.freetogame.com/api/games');
+        const url = query 
+          ? `https://www.freetogame.com/api/games?platform=pc&category=${query}` 
+          : 'https://www.freetogame.com/api/games';
+        const res = await fetch(url);
         const data = await res.json();
-        setGames(data.slice(0, 20).map((g: any) => ({
+        setGames(Array.isArray(data) ? data.slice(0, 20).map((g: any) => ({
           id: g.id,
           name: g.title,
           background_image: g.thumbnail,
           rating: 4.5,
           released: g.release_date,
           platforms: []
-        })));
+        })) : []);
       } else {
-        const res = await fetch(`https://api.rawg.io/api/games?key=${RAWG_API_KEY}&page_size=20`);
+        const url = query 
+          ? `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&search=${query}&page_size=20`
+          : `https://api.rawg.io/api/games?key=${RAWG_API_KEY}&page_size=20`;
+        const res = await fetch(url);
         const data = await res.json();
         setGames(data.results);
       }
@@ -48,6 +54,11 @@ export default function Games() {
     }
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchGames(search);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -55,7 +66,7 @@ export default function Games() {
           <h1 className="text-3xl font-bold">Gaming Hub</h1>
           <p className="text-zinc-400 mt-1">Discover and play thousands of free games.</p>
         </div>
-        <div className="relative w-full md:w-96">
+        <form onSubmit={handleSearch} className="relative w-full md:w-96">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" size={18} />
           <input 
             type="text"
@@ -64,7 +75,7 @@ export default function Games() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-        </div>
+        </form>
       </div>
 
       {loading ? (

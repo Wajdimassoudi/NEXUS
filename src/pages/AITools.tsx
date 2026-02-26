@@ -13,6 +13,7 @@ export default function AITools() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tool, setTool] = useState<'chat' | 'image'>('chat');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -26,25 +27,47 @@ export default function AITools() {
 
     const userMsg: Message = { role: 'user', content: input, type: 'text' };
     setMessages(prev => [...prev, userMsg]);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-      const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
-        contents: input,
-      });
+      if (tool === 'chat') {
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+        const response = await ai.models.generateContent({
+          model: "gemini-3-flash-preview",
+          contents: currentInput,
+        });
 
-      const aiMsg: Message = { 
-        role: 'model', 
-        content: response.text || "I'm sorry, I couldn't process that.",
-        type: 'text'
-      };
-      setMessages(prev => [...prev, aiMsg]);
+        const aiMsg: Message = { 
+          role: 'model', 
+          content: response.text || "I'm sorry, I couldn't process that.",
+          type: 'text'
+        };
+        setMessages(prev => [...prev, aiMsg]);
+      } else {
+        // Image Generation
+        const response = await fetch('/api/ai/generate-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: currentInput })
+        });
+        
+        if (!response.ok) throw new Error('Generation failed');
+        
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+        
+        const aiMsg: Message = { 
+          role: 'model', 
+          content: imageUrl,
+          type: 'image'
+        };
+        setMessages(prev => [...prev, aiMsg]);
+      }
     } catch (err) {
       console.error(err);
-      setMessages(prev => [...prev, { role: 'model', content: "Error connecting to AI service.", type: 'text' }]);
+      setMessages(prev => [...prev, { role: 'model', content: "Error connecting to AI service. Please check your API keys.", type: 'text' }]);
     } finally {
       setLoading(false);
     }
@@ -59,16 +82,26 @@ export default function AITools() {
             <Sparkles size={16} className="mr-2 text-emerald-400" /> Nexus AI
           </h3>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            Powered by Gemini 3.0. Use it for content creation, coding help, or image generation.
+            Multi-modal AI hub. Switch between chat and image generation tools.
           </p>
         </div>
         
         <div className="space-y-2">
-          <button className="w-full flex items-center p-3 rounded-xl bg-[#0F0F0F] border border-zinc-800 text-sm font-medium hover:border-zinc-700 transition-colors">
-            <MessageSquare size={18} className="mr-3 text-blue-400" /> Chat Assistant
+          <button 
+            onClick={() => setTool('chat')}
+            className={`w-full flex items-center p-3 rounded-xl border transition-colors text-sm font-medium ${
+              tool === 'chat' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-[#0F0F0F] border-zinc-800 text-zinc-400 hover:border-zinc-700'
+            }`}
+          >
+            <MessageSquare size={18} className="mr-3" /> Chat Assistant
           </button>
-          <button className="w-full flex items-center p-3 rounded-xl bg-[#0F0F0F] border border-zinc-800 text-sm font-medium hover:border-zinc-700 transition-colors opacity-50 cursor-not-allowed">
-            <ImageIcon size={18} className="mr-3 text-purple-400" /> Image Generator
+          <button 
+            onClick={() => setTool('image')}
+            className={`w-full flex items-center p-3 rounded-xl border transition-colors text-sm font-medium ${
+              tool === 'image' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-[#0F0F0F] border-zinc-800 text-zinc-400 hover:border-zinc-700'
+            }`}
+          >
+            <ImageIcon size={18} className="mr-3" /> Image Generator
           </button>
         </div>
 
@@ -113,7 +146,11 @@ export default function AITools() {
                     ? 'bg-emerald-500 text-black font-medium' 
                     : 'bg-zinc-900 border border-zinc-800 text-zinc-100'
                 }`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  {msg.type === 'image' ? (
+                    <img src={msg.content} alt="AI Generated" className="rounded-lg w-full h-auto" />
+                  ) : (
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  )}
                 </div>
               </motion.div>
             ))}

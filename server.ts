@@ -2,9 +2,26 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
+import Database from "better-sqlite3";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Initialize Database
+const db = new Database("nexus.db");
+db.exec(`
+  CREATE TABLE IF NOT EXISTS stats (
+    id INTEGER PRIMARY KEY,
+    visitors INTEGER DEFAULT 0,
+    earnings REAL DEFAULT 0.0
+  )
+`);
+
+// Ensure initial stats exist
+const row = db.prepare("SELECT * FROM stats WHERE id = 1").get();
+if (!row) {
+  db.prepare("INSERT INTO stats (id, visitors, earnings) VALUES (1, 1240, 1250.80)").run();
+}
 
 async function startServer() {
   const app = express();
@@ -15,6 +32,18 @@ async function startServer() {
   // API Routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", message: "Nexus Server is running" });
+  });
+
+  // Real-time Stats
+  app.get("/api/stats", (req, res) => {
+    const stats = db.prepare("SELECT * FROM stats WHERE id = 1").get();
+    res.json(stats);
+  });
+
+  // Track Visit
+  app.post("/api/track-visit", (req, res) => {
+    db.prepare("UPDATE stats SET visitors = visitors + 1 WHERE id = 1").run();
+    res.json({ success: true });
   });
 
   // Secure Wallet Endpoint
@@ -29,7 +58,7 @@ async function startServer() {
     });
   });
 
-  // RapidAPI Proxy (Example: Crypto Market Data)
+  // RapidAPI Proxy
   app.get("/api/market-data", async (req, res) => {
     try {
       const response = await fetch("https://coinranking1.p.rapidapi.com/coins?limit=5", {
@@ -42,6 +71,32 @@ async function startServer() {
       res.json(data);
     } catch (err) {
       res.status(500).json({ error: "Failed to fetch market data" });
+    }
+  });
+
+  // HuggingFace Proxy (Image Generation)
+  app.post("/api/ai/generate-image", async (req, res) => {
+    const { prompt } = req.body;
+    const HF_TOKEN = process.env.VITE_HUGGINGFACE_API_KEY;
+    
+    if (!HF_TOKEN) {
+      return res.status(400).json({ error: "HuggingFace API Key not configured" });
+    }
+
+    try {
+      const response = await fetch(
+        "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
+        {
+          headers: { Authorization: `Bearer ${HF_TOKEN}` },
+          method: "POST",
+          body: JSON.stringify({ inputs: prompt }),
+        }
+      );
+      const blob = await response.blob();
+      const buffer = Buffer.from(await blob.arrayBuffer());
+      res.type(blob.type).send(buffer);
+    } catch (err) {
+      res.status(500).json({ error: "AI Generation failed" });
     }
   });
 

@@ -11,6 +11,7 @@ const stats = [
 
 export default function Dashboard() {
   const [marketData, setMarketData] = useState<any[]>([]);
+  const [dbStats, setDbStats] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/market-data')
@@ -21,12 +22,24 @@ export default function Dashboard() {
         }
       })
       .catch(err => console.error(err));
+
+    fetch('/api/stats')
+      .then(res => res.json())
+      .then(data => setDbStats(data))
+      .catch(err => console.error(err));
   }, []);
+
+  const currentStats = [
+    { label: 'Daily Revenue', value: dbStats ? `$${(dbStats.earnings / 30).toFixed(2)}` : '$42.50', change: '+12.5%', icon: DollarSign, color: 'text-emerald-400' },
+    { label: 'Total Visitors', value: dbStats ? dbStats.visitors.toLocaleString() : '1,240', change: '+8.2%', icon: Users, color: 'text-blue-400' },
+    { label: 'Avg. CPM', value: '$2.45', change: '+3.1%', icon: TrendingUp, color: 'text-purple-400' },
+    { label: 'Click Rate', value: '4.8%', change: '-0.5%', icon: MousePointer2, color: 'text-orange-400' },
+  ];
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, i) => (
+        {currentStats.map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
