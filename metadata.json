@@ -1,0 +1,8 @@
+{
+  "name": "Nexus Hub",
+  "description": "A comprehensive monetization platform integrating games, video chat, AI tools, and entertainment.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
