@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Shield, Zap, Smartphone, Search, CheckCircle2 } from 'lucide-react';
 import { motion } from 'motion/react';
 
@@ -15,6 +15,31 @@ const apps = [
 
 export default function Apps() {
   const [search, setSearch] = useState('');
+  const [fdroidApps, setFdroidApps] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('https://f-droid.org/repo/index-v1.json')
+      .then(res => res.json())
+      .then(data => {
+        if (data.apps) {
+          setFdroidApps(data.apps.slice(0, 20));
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
+  const displayApps = fdroidApps.length > 0 ? fdroidApps.map(app => ({
+    name: app.name || app.packageName,
+    category: app.categories?.[0] || 'App',
+    size: 'Varies',
+    downloads: '1M+',
+    icon: `https://f-droid.org/repo/${app.packageName}/en-US/icon.png`
+  })) : apps;
 
   return (
     <div className="space-y-8">
@@ -61,32 +86,46 @@ export default function Apps() {
 
         {/* Apps Grid */}
         <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {apps.map((app, i) => (
-            <motion.div
-              key={app.name}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="p-4 rounded-2xl bg-[#0F0F0F] border border-zinc-800 hover:border-zinc-700 transition-all flex items-center group"
-            >
-              <div className="w-16 h-16 rounded-2xl overflow-hidden mr-4 border border-zinc-800">
-                <img src={app.icon} alt={app.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center">
-                  <h3 className="font-bold text-sm mr-2">{app.name}</h3>
-                  <CheckCircle2 size={12} className="text-blue-400" />
+          {loading ? (
+            [...Array(6)].map((_, i) => (
+              <div key={i} className="h-24 bg-zinc-900 rounded-2xl animate-pulse" />
+            ))
+          ) : (
+            displayApps.map((app, i) => (
+              <motion.div
+                key={app.name}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="p-4 rounded-2xl bg-[#0F0F0F] border border-zinc-800 hover:border-zinc-700 transition-all flex items-center group"
+              >
+                <div className="w-16 h-16 rounded-2xl overflow-hidden mr-4 border border-zinc-800 bg-zinc-900 flex items-center justify-center">
+                  <img 
+                    src={app.icon} 
+                    alt={app.name} 
+                    className="w-full h-full object-cover" 
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://picsum.photos/seed/${app.name}/100/100`;
+                    }}
+                  />
                 </div>
-                <p className="text-xs text-zinc-500">{app.category} • {app.size}</p>
-                <div className="flex items-center mt-1 text-[10px] text-zinc-400">
-                  <Smartphone size={10} className="mr-1" /> {app.downloads} Downloads
+                <div className="flex-1">
+                  <div className="flex items-center">
+                    <h3 className="font-bold text-sm mr-2 line-clamp-1">{app.name}</h3>
+                    <CheckCircle2 size={12} className="text-blue-400" />
+                  </div>
+                  <p className="text-xs text-zinc-500">{app.category} • {app.size}</p>
+                  <div className="flex items-center mt-1 text-[10px] text-zinc-400">
+                    <Smartphone size={10} className="mr-1" /> {app.downloads} Downloads
+                  </div>
                 </div>
-              </div>
-              <button className="p-3 rounded-xl bg-zinc-800 group-hover:bg-emerald-500 group-hover:text-black transition-all">
-                <Download size={18} />
-              </button>
-            </motion.div>
-          ))}
+                <button className="p-3 rounded-xl bg-zinc-800 group-hover:bg-emerald-500 group-hover:text-black transition-all">
+                  <Download size={18} />
+                </button>
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
 

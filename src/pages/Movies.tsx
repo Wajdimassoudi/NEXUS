@@ -25,8 +25,31 @@ export default function Movies() {
   const fetchMovies = async (query = '') => {
     setLoading(true);
     try {
-      if (!TMDB_API_KEY) {
-        // Mock data if no API key
+      // Try YTS first (No Key Required)
+      const ytsUrl = query 
+        ? `https://yts.mx/api/v2/list_movies.json?query_term=${query}&limit=20`
+        : '/api/movies/yts';
+      const res = await fetch(ytsUrl);
+      const data = await res.json();
+      
+      if (data.data && data.data.movies) {
+        setMovies(data.data.movies.map((m: any) => ({
+          id: m.id,
+          title: m.title,
+          poster_path: m.large_cover_image,
+          vote_average: m.rating,
+          release_date: m.year.toString(),
+          overview: m.summary
+        })));
+      } else if (TMDB_API_KEY) {
+        const url = query 
+          ? `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${query}`
+          : `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setMovies(data.results);
+      } else {
+        // Mock fallback
         setMovies([...Array(12)].map((_, i) => ({
           id: i,
           title: query ? `${query} Result ${i + 1}` : `Sample Movie ${i + 1}`,
@@ -35,13 +58,6 @@ export default function Movies() {
           release_date: '2024-01-01',
           overview: 'This is a sample movie description for the Nexus platform.'
         })));
-      } else {
-        const url = query 
-          ? `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&query=${query}`
-          : `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}`;
-        const res = await fetch(url);
-        const data = await res.json();
-        setMovies(data.results);
       }
     } catch (err) {
       console.error(err);

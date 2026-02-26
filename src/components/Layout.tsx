@@ -22,11 +22,13 @@ interface LayoutProps {
 const tabs = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'games', label: 'Games', icon: Gamepad2 },
-  { id: 'video', label: 'Video Chat', icon: Video },
-  { id: 'ai', label: 'AI Tools', icon: BrainCircuit },
+  { id: 'tv', label: 'Live TV', icon: Video },
   { id: 'movies', label: 'Movies', icon: Film },
+  { id: 'music', label: 'Music', icon: Gamepad2 }, // Using Gamepad2 as placeholder for Music
+  { id: 'ai', label: 'AI Tools', icon: BrainCircuit },
   { id: 'apps', label: 'App Store', icon: Download },
-  { id: 'monetization', label: 'Monetization', icon: DollarSign },
+  { id: 'news', label: 'News', icon: Film }, // Using Film as placeholder for News
+  { id: 'monetization', label: 'Earnings', icon: DollarSign },
 ];
 
 export default function Layout({ children, activeTab, setActiveTab }: LayoutProps) {
@@ -58,7 +60,7 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
           </button>
         </div>
 
-        <nav className="flex-1 px-3 space-y-2">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar">
           {tabs.map((tab) => (
             <button
               key={tab.id}
@@ -69,9 +71,9 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
                   : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100'
               }`}
             >
-              <tab.icon size={22} className={activeTab === tab.id ? 'text-emerald-400' : 'group-hover:text-zinc-100'} />
+              <tab.icon size={20} className={activeTab === tab.id ? 'text-emerald-400' : 'group-hover:text-zinc-100'} />
               {isSidebarOpen && (
-                <span className="ml-3 font-medium text-sm">{tab.label}</span>
+                <span className="ml-3 font-medium text-xs">{tab.label}</span>
               )}
             </button>
           ))}
@@ -79,15 +81,15 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
 
         <div className="p-4 border-t border-zinc-800">
           <button className="w-full flex items-center p-3 rounded-xl hover:bg-zinc-800 transition-colors text-zinc-400 hover:text-zinc-100">
-            <User size={22} />
-            {isSidebarOpen && <span className="ml-3 text-sm font-medium">Profile</span>}
+            <User size={20} />
+            {isSidebarOpen && <span className="ml-3 text-xs font-medium">Profile</span>}
           </button>
         </div>
       </aside>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0F0F0F]/90 backdrop-blur-lg border-t border-zinc-800 z-50 px-4 py-2 flex justify-between items-center">
-        {tabs.slice(0, 5).map((tab) => (
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0F0F0F]/95 backdrop-blur-xl border-t border-zinc-800 z-50 px-2 py-1 flex justify-around items-center">
+        {tabs.filter(t => ['dashboard', 'games', 'tv', 'movies', 'monetization'].includes(t.id)).map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -95,8 +97,8 @@ export default function Layout({ children, activeTab, setActiveTab }: LayoutProp
               activeTab === tab.id ? 'text-emerald-400' : 'text-zinc-500'
             }`}
           >
-            <tab.icon size={20} />
-            <span className="text-[10px] mt-1 font-medium">{tab.label.split(' ')[0]}</span>
+            <tab.icon size={18} />
+            <span className="text-[9px] mt-1 font-medium">{tab.label.split(' ')[0]}</span>
           </button>
         ))}
       </nav>

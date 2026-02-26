@@ -16,11 +16,18 @@ export default function Dashboard() {
 
   useEffect(() => {
     const fetchData = () => {
-      fetch('/api/market-data')
+      fetch('/api/crypto/markets')
         .then(res => res.json())
         .then(data => {
-          if (data.data && data.data.coins) {
-            setMarketData(data.data.coins);
+          if (Array.isArray(data)) {
+            setMarketData(data.map(coin => ({
+              uuid: coin.id,
+              symbol: coin.symbol.toUpperCase(),
+              name: coin.name,
+              iconUrl: coin.image,
+              price: coin.current_price,
+              change: coin.price_change_percentage_24h
+            })));
           }
         })
         .catch(err => console.error(err));

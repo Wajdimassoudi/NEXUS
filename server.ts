@@ -106,6 +106,66 @@ async function startServer() {
     }
   });
 
+  // YTS Movies Proxy
+  app.get("/api/movies/yts", async (req, res) => {
+    try {
+      const response = await fetch("https://yts.mx/api/v2/list_movies.json?limit=20&sort_by=download_count");
+      const data = await response.json();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch YTS movies" });
+    }
+  });
+
+  // IPTV Channels Proxy
+  app.get("/api/tv/channels", async (req, res) => {
+    try {
+      const response = await fetch("https://iptv-org.github.io/api/channels.json");
+      const data = await response.json();
+      res.json(data.slice(0, 100)); // Limit to first 100 for performance
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch IPTV channels" });
+    }
+  });
+
+  // Deezer Music Proxy
+  app.get("/api/music/chart", async (req, res) => {
+    try {
+      const response = await fetch("https://api.deezer.com/chart");
+      const data = await response.json();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch Deezer chart" });
+    }
+  });
+
+  // HackerNews Proxy
+  app.get("/api/news/top", async (req, res) => {
+    try {
+      const response = await fetch("https://hacker-news.firebaseio.com/v0/topstories.json");
+      const ids = await response.json();
+      const topIds = ids.slice(0, 10);
+      const stories = await Promise.all(topIds.map(async (id: number) => {
+        const res = await fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`);
+        return res.json();
+      }));
+      res.json(stories);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch news" });
+    }
+  });
+
+  // Coingecko Proxy
+  app.get("/api/crypto/markets", async (req, res) => {
+    try {
+      const response = await fetch("https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=10&page=1&sparkline=false");
+      const data = await response.json();
+      res.json(data);
+    } catch (err) {
+      res.status(500).json({ error: "Failed to fetch crypto data" });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

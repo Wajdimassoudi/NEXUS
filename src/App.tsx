@@ -8,6 +8,10 @@ import Movies from './pages/Movies';
 import Apps from './pages/Apps';
 import Monetization from './pages/Monetization';
 
+import LiveTV from './pages/LiveTV';
+import Music from './pages/Music';
+import News from './pages/News';
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -19,10 +23,12 @@ export default function App() {
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'games': return <Games />;
-      case 'video': return <VideoChat />;
-      case 'ai': return <AITools />;
+      case 'tv': return <LiveTV />;
       case 'movies': return <Movies />;
+      case 'music': return <Music />;
+      case 'ai': return <AITools />;
       case 'apps': return <Apps />;
+      case 'news': return <News />;
       case 'monetization': return <Monetization />;
       default: return <Dashboard />;
     }
